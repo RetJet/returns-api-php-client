@@ -170,6 +170,22 @@ Identyczny kształt, po jednym modelu na zasób. Ścieżka itemu to ścieżka je
 Zasób bez endpointu itemu rzuca `ConfigurationException::noItemEndpoint()`, zamiast wysyłać
 żądanie, które mogłoby skończyć się wyłącznie na 404.
 
+**`orderedProducts()` wyszukuje, a nie listuje.** Jest w tej tabeli, bo odpowiada tym samym
+kształtem kolekcji, a nie dlatego, że zachowuje się jak pozostałe: wywołany bez kryteriów
+zwraca `400`, więc `list()` i `iterate()` potrzebują `$query`. Musi być jedno z tych:
+
+| Kryteria | |
+|---|---|
+| `email` + `orderId` | adres klienta i numer zamówienia używany przez kanał sprzedaży |
+| `usernameAllegro` + `phone` | nazwa użytkownika na marketplace i numer telefonu |
+| `parcelTrackingCode` | samodzielnie |
+
+`mode` jest opcjonalne i przyjmuje `all` (domyślne) albo `exact`.
+
+```php
+$client->orderedProducts()->list(query: ['email' => 'john@example.com', 'orderId' => '1001']);
+```
+
 ## Kolekcje
 
 ### ResourceCollection

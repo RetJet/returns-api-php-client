@@ -156,7 +156,7 @@ Every action takes `$requestId` as its first argument. There is no intermediate 
 | `GET /v1/sale-channels/{id}` | `$client->saleChannels()->get($id)` |
 | `GET /v1/return-points` | `$client->returnPoints()->list(page: 1)` · `iterate()` |
 | `GET /v1/return-points/{id}` | `$client->returnPoints()->get($id)` |
-| `GET /v1/ordered-products` | `$client->orderedProducts()->list(page: 1)` · `iterate()` |
+| `GET /v1/ordered-products` | `$client->orderedProducts()->list(page: 1, query: [...])` · `iterate()` - a **search**, see below |
 | `GET /v1/rma-request-items-conditions` | `$client->itemConditions()->list(page: 1)` · `iterate()` |
 | `GET /v1/rma-request-items-conditions/{id}` | `$client->itemConditions()->get($id)` |
 | `GET /v1/rma-request-items-reasons` | `$client->itemReasons()->list(page: 1)` · `iterate()` |

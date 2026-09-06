@@ -156,7 +156,7 @@ Każda akcja przyjmuje `$requestId` jako pierwszy argument. Nie ma obiektu pośr
 | `GET /v1/sale-channels/{id}` | `$client->saleChannels()->get($id)` |
 | `GET /v1/return-points` | `$client->returnPoints()->list(page: 1)` · `iterate()` |
 | `GET /v1/return-points/{id}` | `$client->returnPoints()->get($id)` |
-| `GET /v1/ordered-products` | `$client->orderedProducts()->list(page: 1)` · `iterate()` |
+| `GET /v1/ordered-products` | `$client->orderedProducts()->list(page: 1, query: [...])` · `iterate()` - **wyszukiwarka**, patrz niżej |
 | `GET /v1/rma-request-items-conditions` | `$client->itemConditions()->list(page: 1)` · `iterate()` |
 | `GET /v1/rma-request-items-conditions/{id}` | `$client->itemConditions()->get($id)` |
 | `GET /v1/rma-request-items-reasons` | `$client->itemReasons()->list(page: 1)` · `iterate()` |

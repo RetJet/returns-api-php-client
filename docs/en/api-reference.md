@@ -170,6 +170,22 @@ Identical shape, one model each. An item path is its collection path plus an id.
 operation. A resource without an item endpoint throws `ConfigurationException::noItemEndpoint()`
 rather than sending a request that could only 404.
 
+**`orderedProducts()` searches rather than lists.** It sits in this table because it answers
+with the same collection shape, not because it behaves like the others: called with no criteria
+it answers `400`, so `list()` and `iterate()` need `$query`. One of these has to be there:
+
+| Criteria | |
+|---|---|
+| `email` + `orderId` | the customer's address and the order number the sale channel uses |
+| `usernameAllegro` + `phone` | marketplace username and phone number |
+| `parcelTrackingCode` | on its own |
+
+`mode` is optional and takes `all` (default) or `exact`.
+
+```php
+$client->orderedProducts()->list(query: ['email' => 'john@example.com', 'orderId' => '1001']);
+```
+
 ## Collections
 
 ### ResourceCollection
