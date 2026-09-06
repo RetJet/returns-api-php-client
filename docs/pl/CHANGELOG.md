@@ -82,9 +82,11 @@ tego taga.
 
 ### Znane ograniczenia
 
-- **`401` nie niesie dokumentu problemu.** Inaczej niż każdy inny status błędu w tym API, błąd
-  uwierzytelnienia odpowiada `text/html` i gołym napisem `Authentication failed`, więc
-  `AuthenticationException::problem()->detail()` jest `null`. `500` z
+- **Odrzucony klucz zwraca `401` bez dokumentu problemu.** Odpowiedź przychodzi jako
+  `text/html` z gołym napisem `Authentication failed`, więc `AuthenticationException::problem()`
+  nie ma `detail()`. Żądanie zupełnie bez nagłówka `Authorization` to drugi przypadek i dokument
+  problemu niesie, więc `detail()` równe `null` mówi, że klucz został odrzucony, a nie że go
+  brakowało. `500` z
   `detail: "Unable to exchange token"` znaczy to samo i nadal może wystąpić, gdy usługa wymiany
   tokenu nie działa; SDK nie przepisuje go na `AuthenticationException`.
 - **Akcje zwracają `void`.** Ich odpowiedzi są echem wysłanego payloadu, więc do zobaczenia
@@ -95,6 +97,11 @@ tego taga.
   ani parametru query, więc metoda przyjmuje wyłącznie `$requestId` - nie ma gdzie nazwać
   innego użytkownika, a serwer ignorujący niezadeklarowane body po cichu skasowałby własną
   obserwację wywołującego.
+- **`orderedProducts()` wyszukuje, a nie listuje.** Endpoint odrzuca żądanie bez kryteriów,
+  więc `list()` i `iterate()` zwracają `400`, dopóki `$query` nie poda jednego z zestawów:
+  `email` + `orderId`, `usernameAllegro` + `phone`, albo samego `parcelTrackingCode`. Spec
+  deklaruje te parametry, nie oznaczając żadnego jako wymagany, bo OpenAPI nie potrafi wyrazić
+  „jedna z tych trzech kombinacji".
 - **Zapisy w praktyce nie są ponawiane**, bo prawie każdy zapis w tym API to POST, a
   powtórzenie go po niejednoznacznej awarii mogłoby go zdublować.
 - **Domyślny `timeout` jest egzekwowany wyłącznie dla klienta, którego SDK buduje sam.** PSR-18
@@ -121,11 +128,17 @@ Trzy pytania, wokół których budowany był ten klient, doczekały się odpowie
   Nadal jest wysyłana, bo serwer czytający którekolwiek z tych dwóch miejsc dostanie tę samą
   wartość.
 
-### Pytanie otwarte
+Trzy endpointy, których nie dało się sprawdzić, gdy powstawały tamte pytania, zostały od tego
+czasu wywołane na produkcji prawdziwym kluczem. `GET /v1/sale-channels`, `GET .../followers`
+i `GET .../timeline` zwracają `200`; `GET /v1/ordered-products` zwraca `400`, dopóki nie dostanie
+kryteriów wyszukiwania, co jest opisanym wyżej ograniczeniem, a nie usterką.
 
-- Trzy endpointy mają znane ograniczenia po stronie serwera i nie dało się ich w pełni
-  sprawdzić: `GET /v1/sale-channels`, `GET /v1/ordered-products` oraz
-  `GET .../followers` / `.../timeline`.
+### Niesprawdzone
+
+Każda operacja odczytu została wywołana na produkcji. **Dziewiętnaście operacji zapisu nie**:
+zakładanie zgłoszenia, piętnaście akcji jednostkowych i pięć operacji bulk zmieniają prawdziwe
+zwroty, więc zostały nietknięte. Ich ścieżki i kształty payloadów zgadzają się z dokumentem
+i nic ponad to nie jest o nich twierdzone.
 
 [Unreleased]: https://github.com/RetJet/returns-api-php-client/compare/v0.1.0-beta.1...HEAD
 [0.1.0-beta.1]: https://github.com/RetJet/returns-api-php-client/releases/tag/v0.1.0-beta.1

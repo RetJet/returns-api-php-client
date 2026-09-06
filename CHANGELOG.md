@@ -79,9 +79,10 @@ the open question below is a pre-existing gap in the underlying API, not a block
 
 ### Known limitations
 
-- **A `401` carries no problem document.** Unlike every other error status on this API, an
-  authentication failure answers with `text/html` and the bare string `Authentication failed`,
-  so `AuthenticationException::problem()->detail()` is `null`. A `500` with
+- **A rejected key answers `401` without a problem document.** It comes back as `text/html`
+  carrying the bare string `Authentication failed`, so `AuthenticationException::problem()`
+  has no `detail()`. A request with no `Authorization` header at all is the other case and does
+  carry one, so `detail()` being `null` says the key was refused rather than missing. A `500` with
   `detail: "Unable to exchange token"` means the same thing and can still occur when the token
   exchange service is unhealthy; the SDK does not rewrite it into an `AuthenticationException`.
 - **Actions return `void`.** Their responses echo the payload just sent, so a fresh `get()` is
@@ -91,6 +92,11 @@ the open question below is a pre-existing gap in the underlying API, not a block
 - **`removeFollower()` cannot unfollow another user.** The endpoint accepts neither a body nor
   a query parameter, so the method takes only `$requestId` - there is nowhere to name another
   user, and a server ignoring an undeclared body would silently remove your own subscription.
+- **`orderedProducts()` searches rather than lists.** The endpoint refuses a request carrying
+  no criteria, so `list()` and `iterate()` answer `400` unless `$query` names one of
+  `email` + `orderId`, `usernameAllegro` + `phone`, or `parcelTrackingCode` on its own. The spec
+  declares those parameters without marking any required, because OpenAPI cannot express
+  "one of these three combinations".
 - **Writes are effectively never retried**, because almost every write in this API is a POST
   and replaying one after an ambiguous failure could duplicate it.
 - **The `timeout` default is only enforced for a client the SDK builds itself.** PSR-18 offers
@@ -116,10 +122,17 @@ documenting itself properly and one by measurement:
   as `readOnly`, so the copy the SDK also sends in the body is redundant rather than load-bearing.
   It is still sent, because a server that reads either one gets the same value.
 
-### Open question
+The three endpoints that could not be exercised when those questions were written have since
+been called against production with a real key. `GET /v1/sale-channels`, `GET .../followers` and
+`GET .../timeline` answer `200`; `GET /v1/ordered-products` answers `400` until it is given
+search criteria, which is the known limitation above rather than a fault.
 
-- Three endpoints have known server-side limitations and could not be fully exercised:
-  `GET /v1/sale-channels`, `GET /v1/ordered-products`, and `GET .../followers` / `.../timeline`.
+### Not exercised
+
+Every read operation has been called against production. **The nineteen write operations have
+not**: creating a request, the fifteen single-request actions and the five bulk operations
+change real returns, so they were left alone. Their paths and payload shapes match the document,
+and nothing beyond that is claimed for them.
 
 [Unreleased]: https://github.com/RetJet/returns-api-php-client/compare/v0.1.0-beta.1...HEAD
 [0.1.0-beta.1]: https://github.com/RetJet/returns-api-php-client/releases/tag/v0.1.0-beta.1
