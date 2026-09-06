@@ -1,0 +1,9 @@
+{
+    "@context": "/contexts/RmaRequestState",
+    "@id": "/.well-known/genid/state-1",
+    "@type": "RmaRequestState",
+    "label": "new",
+    "labelTranslated": "New",
+    "state": "new",
+    "labelColor": "#3b82f6"
+}

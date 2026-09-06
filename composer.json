@@ -1,0 +1,80 @@
+{
+    "name": "retjet/returns-api-php-client",
+    "description": "PHP client for the RetJet API - returns and warranty claims for online shops.",
+    "type": "library",
+    "keywords": ["retjet", "rma", "returns", "warranty", "warranty claims", "api-client", "psr-18", "return management", "returns management", "ecommerce", "php"],
+    "homepage": "https://retjet.com",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "RetJet sp. z o.o.",
+            "email": "contact@retjet.com",
+            "homepage": "https://github.com/RetJet",
+            "role": "Maintainer"
+        }
+    ],
+    "support": {
+        "email": "support@retjet.com",
+        "issues": "https://github.com/RetJet/returns-api-php-client/issues",
+        "source": "https://github.com/RetJet/returns-api-php-client",
+        "docs": "https://github.com/RetJet/returns-api-php-client/blob/main/docs/en/api-reference.md",
+        "security": "https://github.com/RetJet/returns-api-php-client/security/policy"
+    },
+    "require": {
+        "php": "^8.2",
+        "composer-runtime-api": "^2.0",
+        "ext-json": "*",
+        "php-http/discovery": "^1.19",
+        "psr/http-client": "^1.0",
+        "psr/http-factory": "^1.0",
+        "psr/http-message": "^1.1 || ^2.0",
+        "psr/log": "^2.0 || ^3.0"
+    },
+    "require-dev": {
+        "ext-curl": "*",
+        "friendsofphp/php-cs-fixer": "^3.58",
+        "nyholm/psr7": "^1.8",
+        "php-http/curl-client": "^2.3",
+        "phpstan/phpstan": "^2.0",
+        "phpunit/phpunit": "^10.5"
+    },
+    "suggest": {
+        "guzzlehttp/guzzle": "PSR-18 client - picked up automatically by php-http/discovery",
+        "symfony/http-client": "PSR-18 client - picked up automatically by php-http/discovery",
+        "nyholm/psr7": "Lightweight PSR-7/PSR-17 implementation"
+    },
+    "autoload": {
+        "psr-4": {
+            "RetJetApi\\Returns\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "RetJetApi\\Returns\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": "phpunit",
+        "stan": "phpstan analyse --memory-limit=512M",
+        "cs": "php-cs-fixer fix --dry-run --diff",
+        "cs-fix": "php-cs-fixer fix",
+        "coverage-check": "php tools/check-coverage.php",
+        "docs-check": "php tools/check-docs.php"
+    },
+    "scripts-descriptions": {
+        "test": "Run the PHPUnit suites (unit + integration).",
+        "stan": "Run PHPStan at level max.",
+        "cs": "Report coding-standard violations without changing files.",
+        "cs-fix": "Apply coding-standard fixes.",
+        "coverage-check": "Verify every OpenAPI operation has a resource method.",
+        "docs-check": "Verify the English and Polish documentation pairs have not drifted apart."
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "php-http/discovery": true
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

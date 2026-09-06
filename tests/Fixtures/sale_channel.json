@@ -1,0 +1,27 @@
+{
+    "@context": "/contexts/SaleChannel",
+    "@id": "/v1/sale-channels/1",
+    "@type": "SaleChannel",
+    "id": 1,
+    "label": "My Shopify Store",
+    "name": "shopify-main",
+    "channelType": "shopify",
+    "maxReturnDaysProcessingPolicy": 30,
+    "maxWarrantyDaysProcessingPolicy": 365,
+    "returnPointAddress": {
+        "@id": "/v1/return-points/10",
+        "@type": "ReturnPoint",
+        "id": 10,
+        "customLabel": "Warsaw Warehouse",
+        "name": "ACME Returns Dept.",
+        "country": "PL",
+        "state": "Mazowieckie",
+        "city": "Warsaw",
+        "zip": "02-673",
+        "address1": "ul. Konstruktorska 10",
+        "address2": "Building B, Gate 3",
+        "contactPhone": "+48221234567",
+        "contactEmail": "returns@acme.com"
+    },
+    "returnPointId": 154
+}

@@ -1,0 +1,14 @@
+{
+    "@context": "/contexts/ItemResolution",
+    "@id": "/v1/rma-request-items-resolutions/1",
+    "@type": "ItemResolution",
+    "id": 1,
+    "label": "refund",
+    "labelTranslated": "Full refund",
+    "isActive": true,
+    "isReturn": true,
+    "isWarranty": true,
+    "position": 1,
+    "returnPosition": 1,
+    "warrantyPosition": 1
+}

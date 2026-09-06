@@ -1,0 +1,16 @@
+{
+    "@context": "/contexts/OrderedProduct",
+    "@id": "/v1/ordered-products/42",
+    "@type": "OrderedProduct",
+    "id": 42,
+    "name": "Premium Wireless Headphones",
+    "cover": "https://cdn.example.com/products/headphones-001.jpg",
+    "sku": "WH-PRO-001",
+    "price": 299.99,
+    "currency": "PLN",
+    "quantity": 1,
+    "remoteOrder": "ORD-2024-5678",
+    "orderId": "6889645408334",
+    "productId": "SKU-9",
+    "lineId": "LINE-2"
+}

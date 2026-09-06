@@ -1,0 +1,13 @@
+{
+    "@context": "/contexts/ItemReason",
+    "@id": "/v1/rma-request-items-reasons/1",
+    "@type": "ItemReason",
+    "id": 1,
+    "label": "defective",
+    "labelTranslated": "Product is defective",
+    "isActive": true,
+    "isReturn": true,
+    "isWarranty": true,
+    "position": 1,
+    "returnPosition": 1
+}

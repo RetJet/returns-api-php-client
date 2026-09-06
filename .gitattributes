@@ -1,0 +1,29 @@
+# Normalise line endings
+* text=auto eol=lf
+
+# The following do not reach the distribution archive Composer downloads
+# (`--prefer-dist`, the default mode). A GitHub clone and `--prefer-source` still
+# get the whole repository - that is intentional.
+/tests                      export-ignore
+/tools                      export-ignore
+/resources                  export-ignore
+/.github                    export-ignore
+/.gitattributes             export-ignore
+/.gitignore                 export-ignore
+/.editorconfig              export-ignore
+/.php-cs-fixer.dist.php     export-ignore
+/phpunit.xml.dist           export-ignore
+/phpstan.neon               export-ignore
+/CONTRIBUTING.md            export-ignore
+
+# docs/pl/README.md, docs/pl/CHANGELOG.md and docs/pl/SECURITY.md are the Polish translations
+# of files that ship at the root, so they ship too. Everything else under docs/ does not -
+# named individually rather than export-ignoring /docs wholesale, because export-ignore prunes
+# a whole directory outright: a more specific -export-ignore for one file *inside* an ignored
+# directory is not enough to bring it back into the archive.
+/docs/en                    export-ignore
+/docs/pl/api-reference.md   export-ignore
+/docs/pl/extending.md       export-ignore
+/docs/pl/laravel.md         export-ignore
+/docs/pl/symfony.md         export-ignore
+/docs/pl/CONTRIBUTING.md    export-ignore

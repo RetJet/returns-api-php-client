@@ -1,0 +1,7 @@
+{
+    "@context": "/contexts/RmaRequestFile",
+    "@id": "/.well-known/genid/file-1",
+    "@type": "RmaRequestFile",
+    "url": "https://files.retjet.dev/file/10bee370-86fd-43d4-8389-9937456da0c5.pdf",
+    "mime": "application/pdf"
+}

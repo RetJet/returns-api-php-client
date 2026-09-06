@@ -1,0 +1,33 @@
+{
+    "@context": "/contexts/RmaRequestItem",
+    "@id": "/.well-known/genid/item-1",
+    "@type": "RmaRequestItem",
+    "id": 567,
+    "requestedQty": 2,
+    "requestedAmount": 49.99,
+    "requestedCurrency": "PLN",
+    "confirmedQty": 1,
+    "confirmedAmount": 49.99,
+    "confirmedCurrency": "PLN",
+    "label": "damaged_product",
+    "labelTranslated": "Damaged product",
+    "state": "pending",
+    "rmaRequestItemReason": "https://example.com/",
+    "rmaRequestIItemResolution": "https://example.com/",
+    "rmaRequestIItemCondition": "https://example.com/",
+    "orderedProduct": {
+        "@id": "/v1/ordered-products/42",
+        "@type": "OrderedProduct",
+        "id": 42,
+        "name": "Premium Wireless Headphones",
+        "cover": "https://cdn.example.com/products/headphones-001.jpg",
+        "sku": "WH-PRO-001",
+        "price": 299.99,
+        "currency": "PLN",
+        "quantity": 1,
+        "remoteOrder": "ORD-2024-5678",
+        "orderId": "6889645408334",
+        "productId": "SKU-9",
+        "lineId": "LINE-2"
+    }
+}

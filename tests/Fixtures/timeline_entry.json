@@ -1,0 +1,12 @@
+{
+    "@context": "/contexts/RmaRequestTimeline",
+    "@id": "/.well-known/genid/timeline-2106",
+    "@type": "RmaRequestTimeline",
+    "type": "status_change",
+    "createdAt": 1709913600,
+    "description": "Status changed from \"New\" to \"In Progress\"",
+    "public": true,
+    "id": 2106,
+    "user": null,
+    "data": null
+}

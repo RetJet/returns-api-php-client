@@ -1,0 +1,16 @@
+{
+    "@context": "/contexts/ReturnPoint",
+    "@id": "/v1/return-points/10",
+    "@type": "ReturnPoint",
+    "id": 10,
+    "customLabel": "Warsaw Warehouse",
+    "name": "ACME Returns Dept.",
+    "country": "PL",
+    "state": "Mazowieckie",
+    "city": "Warsaw",
+    "zip": "02-673",
+    "address1": "ul. Konstruktorska 10",
+    "address2": "Building B, Gate 3",
+    "contactPhone": "+48221234567",
+    "contactEmail": "returns@acme.com"
+}

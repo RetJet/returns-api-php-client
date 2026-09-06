@@ -1,0 +1,10 @@
+{
+    "@context": "/contexts/ItemCondition",
+    "@id": "/v1/rma-request-items-conditions/1",
+    "@type": "ItemCondition",
+    "id": 1,
+    "label": "new_unopened",
+    "labelTranslated": "New / Unopened",
+    "isActive": true,
+    "position": 1
+}

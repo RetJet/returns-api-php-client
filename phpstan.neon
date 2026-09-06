@@ -1,0 +1,10 @@
+parameters:
+    level: max
+    # Analyse against the minimum supported version, not whatever PHP happens to run the
+    # analyser. Without this the CLI's 8.5 would let 8.3+ syntax and behaviour pass unnoticed.
+    phpVersion: 80200
+    paths:
+        - src
+        - tests
+        - tools
+    treatPhpDocTypesAsCertain: false

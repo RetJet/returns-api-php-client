@@ -1,0 +1,9 @@
+{
+    "@context": "/contexts/RmaRequestFollower",
+    "@id": "/.well-known/genid/follower-2106",
+    "@type": "RmaRequestFollower",
+    "id": 2106,
+    "email": "agent@company.com",
+    "name": "John Agent",
+    "userId": 42
+}

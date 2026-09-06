@@ -1,0 +1,23 @@
+/vendor/
+/composer.lock
+/.phpunit.cache/
+/.php-cs-fixer.cache
+/.phpunit.result.cache
+/coverage/
+.DS_Store
+
+# Editor and IDE state
+/.idea/
+*.swp
+*.code-workspace
+/.history/
+
+# Everything under .vscode/ is per-developer, except the recommended-extensions
+# list, which is worth sharing. The pattern matches the directory's contents
+# rather than the directory itself: git does not descend into an excluded
+# directory, so "/.vscode/" would make the negation below unreachable.
+/.vscode/*
+!/.vscode/extensions.json
+
+# Isolated agent worktrees
+/.claude/worktrees/

@@ -1,0 +1,142 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  # The frozen spec is only refreshed by hand, so drift against the live API would otherwise
+  # go unnoticed until someone happened to run the tool.
+  schedule:
+    - cron: '0 6 * * 1'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    name: PHP ${{ matrix.php }}${{ matrix.dependencies == 'lowest' && ' (lowest deps)' || '' }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.2', '8.3', '8.4']
+        dependencies: [highest]
+        include:
+          # The composer.json constraints claim support for old releases of every dependency.
+          # Nothing verifies that unless one job actually installs them.
+          - php: '8.2'
+            dependencies: lowest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: json, curl, mbstring
+          coverage: none
+          tools: composer:v2
+
+      - name: Install dependencies
+        uses: ramsey/composer-install@v3
+        with:
+          dependency-versions: ${{ matrix.dependencies }}
+
+      - name: Tests
+        run: composer test
+
+      # Static analysis and coding standard are skipped on the lowest-dependency job. Pinning
+      # them low pins PHPStan and php-cs-fixer low too, and those report differently from one
+      # release to the next - PHPStan 2.0 flags a repeatable #[CoversClass] as non-repeatable,
+      # for instance. That is noise about tool versions, not about whether the library works
+      # against the oldest runtime dependencies it claims to support, which is what this job
+      # is for.
+      - name: Static analysis
+        if: matrix.dependencies != 'lowest'
+        run: composer stan
+
+      - name: Coding standard
+        if: matrix.dependencies != 'lowest'
+        run: composer cs
+
+      - name: Spec coverage
+        run: composer coverage-check
+
+      - name: Documentation pairs
+        run: composer docs-check
+
+  package:
+    name: Distribution archive
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+          tools: composer:v2
+
+      # export-ignore decides what a `composer require` actually downloads, and it is easy to
+      # break by adding a file without a matching rule. This asserts the archive contents
+      # rather than trusting the .gitattributes to still be right.
+      #
+      # docs/pl/README.md, docs/pl/CHANGELOG.md and docs/pl/SECURITY.md are the one exception:
+      # they are the Polish translations of files that ship at the root, so docs/ and docs/pl/
+      # exist in the archive as directories carrying only those three files - the rest of
+      # docs/pl/ (the API reference, framework guides, CONTRIBUTING) and all of docs/en/
+      # are not.
+      - name: The dist archive carries only what it should
+        run: |
+          git archive HEAD | tar -t | sort > /tmp/actual.txt
+          cat /tmp/actual.txt
+          if grep -qE '^(tests/|tools/|resources/|\.github/)' /tmp/actual.txt; then
+            echo "::error::Development files leaked into the distribution archive."
+            exit 1
+          fi
+          if grep -E '^docs/' /tmp/actual.txt | grep -qvxE 'docs/|docs/pl/|docs/pl/(README|CHANGELOG|SECURITY)\.md'; then
+            echo "::error::Development files leaked into the distribution archive."
+            exit 1
+          fi
+          for required in composer.json README.md LICENSE 'docs/pl/README.md' 'docs/pl/CHANGELOG.md' 'docs/pl/SECURITY.md'; do
+            grep -qx "$required" /tmp/actual.txt || {
+              echo "::error::$required is missing from the distribution archive."
+              exit 1
+            }
+          done
+
+      - name: composer.json is valid and installable
+        run: composer validate --strict && composer install --dry-run --no-dev
+
+  spec-drift:
+    name: Frozen spec matches the live API
+    runs-on: ubuntu-latest
+    # Only on the schedule: a pull request must not fail because somebody deployed the API.
+    # Deliberately NOT continue-on-error: a red run is the only signal that the spec drifted
+    # or that RETJET_SPEC_BASE_URI is missing/wrong - swallowing the failure here means nobody
+    # finds out.
+    if: github.event_name == 'schedule'
+    # RETJET_SPEC_BASE_URI is stored as an environment secret on "GH", not a repository
+    # secret - without this, secrets.RETJET_SPEC_BASE_URI below resolves to nothing.
+    environment: GH
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          coverage: none
+
+      - name: Compare resources/openapi.json with /docs
+        env:
+          RETJET_SPEC_BASE_URI: ${{ secrets.RETJET_SPEC_BASE_URI }}
+        run: php tools/fetch-openapi.php --check
