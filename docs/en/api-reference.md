@@ -184,8 +184,8 @@ that came with them.
 | `member()` | `list<T>` | the hydrated members of this page |
 | `totalItems()` | `int` | size of the **whole** result set |
 | `count()` | `int` | size of **this page** - a different number as soon as the set spans more than one page |
-| `view()` | `array<string, string>` | Hydra `view` members: `first`, `last`, `previous`, `next` |
-| `nextPage()` | `?string` | the `view.next` URL, or `null` |
+| `view()` | `array<string, string>` | `view` members: `first`, `last`, `previous`, `next`, from a Hydra envelope or the `Link` header |
+| `nextPage()` | `?string` | the next-page URL, or `null` on the last page |
 | `previousPage()` | `?string` | the `view.previous` URL, or `null` |
 | `hasNextPage()` | `bool` | - |
 | `first()` | `?Model` | first member of this page |
@@ -210,7 +210,7 @@ that, so read `count($page)`.
 ### Paginator
 
 `RetJetApi\Returns\Collection\Paginator<T of Model>` - `final`, implements `IteratorAggregate`.
-Walks every page by following the server's own `view.next` rather than incrementing a counter,
+Walks every page by following the server's own next link rather than incrementing a counter,
 which keeps the SDK correct if the API ever changes how it paginates.
 
 | Method | Returns | Notes |

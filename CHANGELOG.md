@@ -36,7 +36,10 @@ the open question below is a pre-existing gap in the underlying API, not a block
 - Readonly models with `fromArray()`, `toArray()` and `raw()`; unknown members of a response
   stay reachable through `raw()`, so a field added by the API does not break hydration.
 - `ResourceCollection` for one page and `Paginator` for lazy iteration over every page,
-  following the Hydra `view.next` link.
+  following the server's own next link. This API reports pagination in headers rather than in
+  the body - `X-Total-Count` and `Link: rel="next"` - so the parser folds those into the same
+  shape a Hydra envelope would have carried; `totalItems()` is therefore the size of the whole
+  set, not of the page.
 - Exception hierarchy behind the `RetJetException` marker interface, mapping HTTP statuses onto
   `AuthenticationException`, `AccessDeniedException`, `NotFoundException`,
   `ValidationException`, `RateLimitException`, `ServerException`, `ApiException`, plus

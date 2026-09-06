@@ -185,7 +185,7 @@ które z nimi przyszły.
 | `totalItems()` | `int` | rozmiar **całego** zbioru wyników |
 | `count()` | `int` | rozmiar **tej strony** - inna liczba, gdy tylko zbiór przekracza jedną stronę |
 | `view()` | `array<string, string>` | człony `view` Hydry: `first`, `last`, `previous`, `next` |
-| `nextPage()` | `?string` | URL z `view.next` albo `null` |
+| `nextPage()` | `?string` | URL następnej strony albo `null` na ostatniej |
 | `previousPage()` | `?string` | URL z `view.previous` albo `null` |
 | `hasNextPage()` | `bool` | - |
 | `first()` | `?Model` | pierwszy człon tej strony |
@@ -210,7 +210,7 @@ gwarantuje, więc czytaj `count($page)`.
 ### Paginator
 
 `RetJetApi\Returns\Collection\Paginator<T of Model>` - `final`, implementuje `IteratorAggregate`.
-Przechodzi wszystkie strony, podążając za `view.next` od serwera, zamiast inkrementować
+Przechodzi wszystkie strony, podążając za linkiem następnej strony od serwera, zamiast inkrementować
 licznik, co utrzymuje SDK w zgodzie z API, gdyby to zmieniło sposób stronicowania.
 
 | Metoda | Zwraca | Uwagi |

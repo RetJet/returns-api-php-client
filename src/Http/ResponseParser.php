@@ -59,11 +59,74 @@ final class ResponseParser
             throw MalformedResponseException::notJson($status);
         }
 
-        if (array_is_list($decoded)) {
-            return ['member' => $decoded, 'totalItems' => count($decoded)];
+        $payload = array_is_list($decoded)
+            ? ['member' => $decoded, 'totalItems' => count($decoded)]
+            : self::withStringKeys($decoded);
+
+        return array_key_exists('member', $payload)
+            ? self::withPaginationHeaders($payload, $response)
+            : $payload;
+    }
+
+    /**
+     * Folds the pagination this API answers with into the envelope the collection layer reads.
+     *
+     * It paginates in headers - `X-Total-Count` and a `Link` with `rel="next"` - and its body
+     * carries no `view` at all, while `totalItems` counts the rows on the page rather than the
+     * whole set. Read from the body alone, a four-page collection looks like a one-page one.
+     * Normalising here rather than in the collection keeps that difference in the one class
+     * that already turns a bare JSON list into the same envelope, and leaves ResourceCollection
+     * and Paginator working against a single shape.
+     *
+     * Headers fill gaps, they do not overwrite: a server that does send a Hydra `view` keeps it.
+     *
+     * @param array<string, mixed> $payload
+     *
+     * @return array<string, mixed>
+     */
+    private static function withPaginationHeaders(array $payload, ResponseInterface $response): array
+    {
+        $total = $response->getHeaderLine('X-Total-Count');
+
+        // Not cast blindly: (int) "many" is 0, which would report an empty collection for one
+        // that has rows, and a caller cannot tell that apart from a genuinely empty result.
+        if ($total !== '' && ctype_digit($total)) {
+            $payload['totalItems'] = (int) $total;
         }
 
-        return self::withStringKeys($decoded);
+        $next = self::nextLink($response->getHeaderLine('Link'));
+
+        if ($next !== null) {
+            $view = is_array($payload['view'] ?? null) ? $payload['view'] : [];
+
+            if (!isset($view['next'])) {
+                $view['next'] = $next;
+            }
+
+            $payload['view'] = $view;
+        }
+
+        return $payload;
+    }
+
+    /**
+     * The URL marked `rel="next"` in an RFC 8288 Link header, or null when there is none.
+     *
+     * Matched by its relation rather than by position: this API advertises its documentation
+     * in the same header and on the last page that is the only link there, so taking the first
+     * URL would have the paginator fetch the documentation and treat it as a page of results.
+     */
+    private static function nextLink(string $header): ?string
+    {
+        if ($header === '') {
+            return null;
+        }
+
+        // Links are comma-separated, so the parameter part must not be allowed to cross a
+        // comma into the next link's parameters.
+        $matched = preg_match('/<([^>]*)>\s*;[^,]*?\brel\s*=\s*(?:"next"|next\b)/i', $header, $matches);
+
+        return $matched === 1 ? $matches[1] : null;
     }
 
     /**

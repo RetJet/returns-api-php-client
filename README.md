@@ -178,7 +178,7 @@ $page = $client->rmaRequests()->list(page: 2);
 $page->totalItems();   // size of the whole result set
 count($page);          // size of this page - not the same number
 $page->hasNextPage();
-$page->nextPage();     // the Hydra view.next link, or null
+$page->nextPage();     // the server's next-page URL, or null on the last page
 
 foreach ($page as $rma) {
     // ...

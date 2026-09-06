@@ -67,6 +67,125 @@ final class ResponseParserTest extends TestCase
         return (new Psr17Factory())->createRequest($method, $path);
     }
 
+    // ------------------------------------------------- header-driven pagination
+
+    /**
+     * This API paginates in headers, not in the body: the collection envelope carries no
+     * `view`, and its `totalItems` counts the rows on the page rather than the whole set.
+     * Measured against production: X-Total-Count said 118 while `totalItems` said 30 on every
+     * page. A caller trusting the body stops paging where there is more to fetch.
+     */
+    public function testXTotalCountOutranksTheTotalItemsInTheBody(): void
+    {
+        $payload = $this->parser->parse(
+            $this->jsonResponse(
+                200,
+                ['member' => [['id' => 1], ['id' => 2]], 'totalItems' => 2],
+                ['X-Total-Count' => '118'],
+            ),
+            $this->request(),
+        );
+
+        self::assertSame(118, ResponseParser::unwrapCollection($payload)['totalItems']);
+    }
+
+    /**
+     * Without this, Paginator asks for `view.next`, gets null on the first page and stops -
+     * silently returning one page of a collection that has four.
+     */
+    public function testTheNextLinkHeaderBecomesTheHydraNextView(): void
+    {
+        $payload = $this->parser->parse(
+            $this->jsonResponse(
+                200,
+                ['member' => [['id' => 1]]],
+                ['Link' => '<https://api.example.com/v1/rma-requests?page=2>; rel="next"'],
+            ),
+            $this->request(),
+        );
+
+        self::assertSame(
+            'https://api.example.com/v1/rma-requests?page=2',
+            ResponseParser::unwrapCollection($payload)['view']['next'] ?? null,
+        );
+    }
+
+    /**
+     * The API advertises its documentation in the same header, and on the last page that is
+     * the only link there. Taking any URL from Link rather than the one marked rel="next"
+     * would make the paginator fetch the API documentation and treat it as the next page.
+     */
+    public function testALinkHeaderWithoutARelNextYieldsNoNextPage(): void
+    {
+        $payload = $this->parser->parse(
+            $this->jsonResponse(
+                200,
+                ['member' => [['id' => 1]]],
+                ['Link' => '<https://api.example.com/docs.jsonld>; rel="http://www.w3.org/ns/hydra/core#apiDocumentation"'],
+            ),
+            $this->request(),
+        );
+
+        self::assertArrayNotHasKey('next', ResponseParser::unwrapCollection($payload)['view']);
+    }
+
+    /**
+     * rel="next" is picked out of a list, not assumed to come first.
+     */
+    public function testTheNextLinkIsFoundAmongOtherLinks(): void
+    {
+        $payload = $this->parser->parse(
+            $this->jsonResponse(
+                200,
+                ['member' => [['id' => 1]]],
+                ['Link' => '<https://api.example.com/v1/rma-requests?page=1>; rel="prev", '
+                    . '<https://api.example.com/v1/rma-requests?page=3>; rel="next", '
+                    . '<https://api.example.com/docs.jsonld>; rel="http://www.w3.org/ns/hydra/core#apiDocumentation"'],
+            ),
+            $this->request(),
+        );
+
+        self::assertSame(
+            'https://api.example.com/v1/rma-requests?page=3',
+            ResponseParser::unwrapCollection($payload)['view']['next'] ?? null,
+        );
+    }
+
+    /**
+     * A body that does carry a Hydra envelope keeps working: the headers fill gaps, they do
+     * not overwrite a link the server actually sent.
+     */
+    public function testABodyViewSurvivesWhenNoNextLinkHeaderIsPresent(): void
+    {
+        $payload = $this->parser->parse(
+            $this->jsonResponse(
+                200,
+                ['member' => [['id' => 1]], 'view' => ['next' => '/v1/rma-requests?page=2']],
+            ),
+            $this->request(),
+        );
+
+        self::assertSame('/v1/rma-requests?page=2', ResponseParser::unwrapCollection($payload)['view']['next']);
+    }
+
+    /**
+     * A non-numeric header is ignored rather than cast: (int) "many" is 0, which would report
+     * an empty collection for one that has rows.
+     */
+    public function testANonNumericTotalCountHeaderIsIgnored(): void
+    {
+        $payload = $this->parser->parse(
+            $this->jsonResponse(
+                200,
+                ['member' => [['id' => 1], ['id' => 2]], 'totalItems' => 2],
+                ['X-Total-Count' => 'many'],
+            ),
+            $this->request(),
+        );
+
+        self::assertSame(2, ResponseParser::unwrapCollection($payload)['totalItems']);
+    }
+
     public function testItDecodesASuccessfulJsonObject(): void
     {
         $payload = $this->parser->parse(

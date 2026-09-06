@@ -13,7 +13,8 @@ use RetJetApi\Returns\Model\Model;
 /**
  * One page of a Hydra collection: the hydrated members plus the metadata that came with them.
  *
- * count() is the size of this page, not of the whole result set - use totalItems() for that.
+ * count() is the size of this page, not of the whole result set - use totalItems() for that,
+ * which reads the count the server reports for the collection rather than for the page.
  * The two are different numbers whenever the collection spans more than one page, and
  * conflating them is the classic pagination bug.
  *
@@ -76,7 +77,8 @@ final readonly class ResourceCollection implements Countable, IteratorAggregate
     }
 
     /**
-     * The raw Hydra `view` members, e.g. ['first' => '/v1/rma-requests?page=1', ...].
+     * The `view` members, e.g. ['first' => '/v1/rma-requests?page=1', ...]. Populated from a Hydra
+     * envelope when the server sends one, and from the `Link` header when it paginates that way.
      *
      * @return array<string, string>
      */

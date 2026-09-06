@@ -506,6 +506,78 @@ final class RmaRequestsTest extends TestCase
         self::assertArrayHasKey('user', $entry->raw(), 'user and data stay untyped in raw().');
     }
 
+    // --------------------------------------------------- header-driven pagination
+
+    /**
+     * The regression this guards is not hypothetical: measured against production, a company
+     * with 118 requests spread over four pages had iterate() yield the first 30 and stop. The
+     * API paginates in headers - no `view` in the body at all - and the paginator was looking
+     * for a Hydra `view.next` that never arrives.
+     *
+     * Every page here carries the body this API really sends: a bare `member` list whose
+     * `totalItems` counts that page, not the collection.
+     */
+    public function testIterateFollowsTheNextLinkHeaderAcrossEveryPage(): void
+    {
+        /**
+         * @param list<int> $ids
+         *
+         * @return array<string, mixed>
+         */
+        $page = static function (array $ids): array {
+            $member = [];
+
+            foreach ($ids as $id) {
+                $member[] = ['id' => $id];
+            }
+
+            return Fixtures::hydraCollection($member);
+        };
+
+        $this->http
+            ->willRespondWithJson(200, $page([1, 2]), [
+                'X-Total-Count' => '5',
+                'Link' => '<https://api.example.com/v1/rma-requests?page=2>; rel="next"',
+            ])
+            ->willRespondWithJson(200, $page([3, 4]), [
+                'X-Total-Count' => '5',
+                'Link' => '<https://api.example.com/v1/rma-requests?page=1>; rel="prev", '
+                    . '<https://api.example.com/v1/rma-requests?page=3>; rel="next"',
+            ])
+            ->willRespondWithJson(200, $page([5]), [
+                'X-Total-Count' => '5',
+                'Link' => '<https://api.example.com/docs.jsonld>; rel="http://www.w3.org/ns/hydra/core#apiDocumentation"',
+            ]);
+
+        $ids = [];
+
+        foreach ($this->rmaRequests()->iterate() as $request) {
+            $ids[] = $request->id;
+        }
+
+        self::assertSame([1, 2, 3, 4, 5], $ids, 'iterate() must walk every page, not just the first.');
+        self::assertSame(3, $this->http->requestCount());
+    }
+
+    /**
+     * X-Total-Count is the size of the whole set; the body's totalItems is the size of the
+     * page. A caller sizing a job from the collection must get the former.
+     */
+    public function testTotalItemsComesFromTheHeaderNotTheBody(): void
+    {
+        $this->http->willRespondWithJson(
+            200,
+            Fixtures::hydraCollection([['id' => 1], ['id' => 2]]),
+            ['X-Total-Count' => '118'],
+        );
+
+        $page = $this->rmaRequests()->list();
+
+        self::assertCount(2, $page, 'count() stays the size of this page.');
+        self::assertSame(118, $page->totalItems());
+        self::assertFalse($page->hasNextPage(), 'No next link means no next page.');
+    }
+
     // ------------------------------------------------------------------- paths
 
     /**

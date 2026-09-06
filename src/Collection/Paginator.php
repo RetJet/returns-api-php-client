@@ -10,7 +10,7 @@ use RetJetApi\Returns\Http\Transport;
 use RetJetApi\Returns\Model\Model;
 
 /**
- * Walks a Hydra collection page by page, following `view.next` until it runs out.
+ * Walks a collection page by page, following the server's own next link until it runs out.
  *
  * Nothing is fetched when the paginator is constructed, and each page is fetched only once
  * the consumer has worked through the previous one - the generator suspends at every yield,
@@ -18,8 +18,10 @@ use RetJetApi\Returns\Model\Model;
  * safe to iterate result sets far larger than memory, which is what it is for; use
  * ResourceCollection when a single page is what you actually want.
  *
- * Following the server's own `view.next` URL rather than incrementing a page counter keeps
- * the SDK correct if the API ever changes how it paginates.
+ * Following the server's own next link rather than incrementing a page counter keeps the SDK
+ * correct if the API ever changes how it paginates. Where that link arrives is not this class's
+ * business: the API sends it as `Link: <...>; rel="next"` and ResponseParser folds it into the
+ * same `view.next` an API emitting a Hydra envelope would have put in the body.
  *
  * @template T of Model
  *

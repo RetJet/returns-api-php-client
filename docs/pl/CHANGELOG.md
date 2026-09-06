@@ -38,7 +38,10 @@ tego taga.
 - Modele `readonly` z `fromArray()`, `toArray()` i `raw()`; nieznane pola odpowiedzi pozostają
   dostępne przez `raw()`, więc pole dodane przez API nie psuje hydratacji.
 - `ResourceCollection` dla jednej strony i `Paginator` do leniwej iteracji po wszystkich
-  stronach, podążający za linkiem Hydra `view.next`.
+  stronach, podążający za linkiem następnej strony od serwera. To API raportuje paginację
+  w nagłówkach, a nie w ciele odpowiedzi - `X-Total-Count` oraz `Link: rel="next"` - więc parser
+  składa je do tego samego kształtu, który niosłaby koperta Hydry; `totalItems()` jest zatem
+  rozmiarem całego zbioru, nie strony.
 - Hierarchia wyjątków za interfejsem znacznikowym `RetJetException`, mapująca statusy HTTP na
   `AuthenticationException`, `AccessDeniedException`, `NotFoundException`,
   `ValidationException`, `RateLimitException`, `ServerException`, `ApiException` oraz
